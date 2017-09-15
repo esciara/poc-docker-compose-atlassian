@@ -32,22 +32,22 @@ http {
     send_timeout                600;
     client_max_body_size        0;
 
-    server {
-        listen       80;
-        server_name  jira.${DOMAIN} www.jira.${DOMAIN};
-
-        location / {
-            proxy_pass              http://jira:8080;
-
-            proxy_set_header        X-Forwarded-Host ${DOLLAR}host;
-            proxy_set_header        X-Forwarded-Server ${DOLLAR}host;
-            proxy_set_header        X-Forwarded-For ${DOLLAR}remote_addr;
-            proxy_set_header        X-Real-IP ${DOLLAR}remote_addr;
-
-            proxy_set_header        Host        ${DOLLAR}host;
-
-        }
-    }
+#    server {
+#        listen       80;
+#        server_name  jira.${DOMAIN} www.jira.${DOMAIN};
+#
+#        location / {
+#            proxy_pass              http://jira:8080;
+#
+#            proxy_set_header        X-Forwarded-Host ${DOLLAR}host;
+#            proxy_set_header        X-Forwarded-Server ${DOLLAR}host;
+#            proxy_set_header        X-Forwarded-For ${DOLLAR}remote_addr;
+#            proxy_set_header        X-Real-IP ${DOLLAR}remote_addr;
+#
+#            proxy_set_header        Host        ${DOLLAR}host;
+#
+#        }
+#    }
 
     server {
         listen       80;
