@@ -23,19 +23,19 @@ services:
     restart: always
     volumes:
       - database-data:/var/lib/postgresql/data
-#  nginx:
-#    image: nginx
-#    restart: always
-#    ports:
-#      - "80:80"
-#    links:
-##      - jira
-#      - confluence
-#    volumes:
-#    - ./:/src
-#    command: ./src/scripts/run_nginx.sh
-#    environment:
-#    - DOMAIN
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80:80"
+    links:
+#      - jira
+      - confluence
+    volumes:
+    - ./:/src
+    command: ./src/scripts/run_nginx.sh
+    environment:
+    - DOMAIN
 volumes:
 #  jira-data:
   confluence-data:
