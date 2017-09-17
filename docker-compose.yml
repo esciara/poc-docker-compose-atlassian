@@ -23,6 +23,8 @@ services:
     restart: always
     volumes:
       - database-data:/var/lib/postgresql/data
+      - ./scripts/setup-confluence-db.sh:/docker-entrypoint-initdb.d/setup-confluence-db.sh
+      - ./tmp:/tmp/dumps # import backups
   nginx:
     image: nginx
     restart: always
