@@ -14,6 +14,15 @@ module Docker
       json['NetworkSettings']['IPAddress']
     end
 
+    def host_or_service
+      if host.to_s.empty?
+        # We assume the container has been managed through Docker Compose
+        json['Config']['Labels']['com.docker.compose.service']
+      else
+        host
+      end
+    end
+
     def setup_capybara_url(port, path = '')
       docker_url        = URI.parse Docker.url
       docker_url.host   = 'localhost' || Docker.info['Name']
