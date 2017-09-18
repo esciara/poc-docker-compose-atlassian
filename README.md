@@ -28,14 +28,14 @@ Docker compose file to run Atlassian Jira Software (not yet) and Confluence on o
           [db:confluence]
 ```
 
-##What is does extra
+## What is does extra
 
 - `docker-compose.yml` creates the postgresql databases at initialisation of the container (and the volume, otherwise scripts in 
 `/docker-entrypoint-initdb.d` won't be run)
 - there is a script based on Ruby + Rspec + Capybara + PhantomJS setting up the Atlassian products 
 (for time being, when newly created)
 
-##Requirements:
+## Requirements:
 
 - Docker version 17.07.0-ce+
 - Docker Compose version 1.16.1+
@@ -43,7 +43,7 @@ Docker compose file to run Atlassian Jira Software (not yet) and Confluence on o
 And to run the scripts that setup the atlassian products:
 - Ruby 2.2.3
 
-###Docker image source files
+### Docker image source files
 
 - [cptactionhank/atlassian-jira](https://hub.docker.com/r/cptactionhank/atlassian-jira/)
 - [cptactionhank/atlassian-confluence](https://hub.docker.com/r/cptactionhank/atlassian-confluence/)
