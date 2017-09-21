@@ -25,10 +25,10 @@ module Docker
 
     def setup_capybara_url(port, path = '')
       docker_url        = URI.parse Docker.url
-      docker_url.host   = 'localhost' || Docker.info['Name']
-      docker_url.scheme = 'http'
+      docker_url.host   = ENV['CONFLUENCE_DOMAIN_NAME'] || 'localhost' || Docker.info['Name']
+      docker_url.scheme = ENV['ATLASSIAN_PROXY_SCHEME']
       docker_url.path   = path
-      docker_url.port   = mapped_port port
+      docker_url.port   = ENV['ATLASSIAN_PROXY_PORT']
       Capybara.app_host = docker_url.to_s
     end
 

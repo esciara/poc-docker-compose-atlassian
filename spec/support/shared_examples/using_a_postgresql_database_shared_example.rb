@@ -15,14 +15,40 @@ end
 
 shared_examples 'using a PostgreSQL database' do
   before :all do
-    within 'form[name=standardform]' do
-      select 'PostgreSQL', from: 'dbChoiceSelect'
-      click_button 'External Database'
+    # This is for up to 6.3.X
+    # within 'form[name=standardform]' do
+    #   select 'PostgreSQL', from: 'dbChoiceSelect'
+    #   click_button 'External Database'
+    #   wait_for_page
+    # end
+    # This is for >= 6.4.0
+    within 'form[name=setupdbchoice]' do
+      find(:css, 'div.select-database-choice-box[data-database-choice=custom]').trigger('click')
+      click_button 'Next'
       wait_for_page
     end
   end
 
-  it { is_expected.to have_button 'Direct JDBC' }
+  # This is for up to 6.3.X
+  # it { is_expected.to have_button 'Direct JDBC' }
+  # This is for >= 6.4.0
+  it { is_expected.to have_current_path %r{/setup/setupdbtype-start.action} }
+  it { is_expected.to have_css 'form[name=setupdbtype]' }
+  it { is_expected.to have_css 'select[name=dbChoiceSelect]' }
+  it { is_expected.to have_button 'Next' }
+
+  # This is for >= 6.4.0 only (not in earlier versions)
+  describe 'selecting PostgreSQL as database' do
+    before :all do
+      within 'form[name=setupdbtype]' do
+        select 'PostgreSQL', from: 'dbChoiceSelect'
+        click_button 'Next'
+        wait_for_page
+      end
+    end
+
+    it { is_expected.to have_button 'Direct JDBC' }
+  end
 
   describe 'setting up Direct JDBC Connection' do
     before :all do
@@ -40,9 +66,9 @@ shared_examples 'using a PostgreSQL database' do
   describe 'setting up JDBC Configuration' do
     before :all do
       within 'form[name=dbform]' do
-        fill_in 'dbConfigInfo.databaseUrl', with: "jdbc:postgresql://#{@container_db.host_or_service}:5432/confluence"
-        fill_in 'dbConfigInfo.userName', with: 'confluenceuser'
-        # fill_in 'dbConfigInfo.password', with: 'mysecretpassword'
+        fill_in 'dbConfigInfo.databaseUrl', with: "jdbc:postgresql://#{@container_db.host_or_service}:5432/atlassiandb"
+        fill_in 'dbConfigInfo.userName', with: ENV['ATLASSIAN_DB_USERNAME']
+        fill_in 'dbConfigInfo.password', with: ENV['ATLASSIAN_DB_PASSWORD']
         click_button 'Next'
         wait_for_page
       end

@@ -1,44 +1,113 @@
-version: '3'
+version: '2'
+
 services:
-#  jira:
-#    image: cptactionhank/atlassian-jira:latest
-#    restart: always
-#    links:
-#      - database
-#    volumes:
-#      - jira-data:/var/atlassian/jira
-
-  confluence:
-    image: cptactionhank/atlassian-confluence:latest
-    restart: always
-    ports:
-      - "8090:8090"
-    links:
-      - database
-    volumes:
-      - confluence-data:/var/atlassian/confluence
-
-  database:
-    image: postgres:9.4
-    restart: always
-    volumes:
-      - database-data:/var/lib/postgresql/data
-      - ./scripts/setup-confluence-db.sh:/docker-entrypoint-initdb.d/setup-confluence-db.sh
-      - ./tmp:/tmp/dumps # import backups
   nginx:
-    image: nginx
-    restart: always
+    image: blacklabelops/nginx:${ATLASSIAN_NGINX_VERSION}
     ports:
-      - "80:80"
-    links:
-#      - jira
-      - confluence
+      - '443:443'
+      - '80:80'
+    networks:
+      default:
+        aliases:
+          - '${CONFLUENCE_DOMAIN_NAME}'
+          - '${JIRA_DOMAIN_NAME}'
     volumes:
-    - ./:/src
-    command: ./src/scripts/run_nginx.sh
+      - nginx_volume:/home/nginx
+      - ssl_certificates:/etc/letsencrypt
     environment:
-    - DOMAIN
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - 'NGINX_REDIRECT_PORT80=${ATLASSIAN_PORT80_REDIRECT}'
+      - 'SERVER2SERVER_NAME=${JIRA_DOMAIN_NAME}'
+      - 'SERVER2REVERSE_PROXY_LOCATION1=/'
+      - 'SERVER2REVERSE_PROXY_PASS1=http://jira:8080'
+      - 'SERVER2HTTPS_ENABLED=${ATLASSIAN_HTTPS}'
+      - 'SERVER2HTTP_ENABLED=${ATLASSIAN_HTTP}'
+      - 'SERVER2LETSENCRYPT_CERTIFICATES=${ATLASSIAN_HTTPS}'
+      - 'SERVER2CERTIFICATE_FILE=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/fullchain.pem'
+      - 'SERVER2CERTIFICATE_KEY=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/privkey.pem'
+      - 'SERVER2CERTIFICATE_TRUSTED=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/fullchain.pem'
+      - 'SERVER2PROXY_APPLICATION=jira'
+      - 'SERVER1SERVER_NAME=${CONFLUENCE_DOMAIN_NAME}'
+      - 'SERVER1REVERSE_PROXY_LOCATION1=/synchrony'
+      - 'SERVER1REVERSE_PROXY_PASS1=http://confluence:8091'
+      - 'SERVER1REVERSE_PROXY_APPLICATION1=confluence6'
+      - 'SERVER1REVERSE_PROXY_LOCATION2=/'
+      - 'SERVER1REVERSE_PROXY_PASS2=http://confluence:8090'
+      - 'SERVER1REVERSE_PROXY_DIRECTIVE2FIELD1=proxy_connect_timeout 300'
+      - 'SERVER1REVERSE_PROXY_DIRECTIVE2FIELD2=proxy_send_timeout 300'
+      - 'SERVER1REVERSE_PROXY_DIRECTIVE2FIELD3=proxy_read_timeout 300'
+      - 'SERVER1REVERSE_PROXY_APPLICATION2=confluence'
+      - 'SERVER1HTTPS_ENABLED=${ATLASSIAN_HTTPS}'
+      - 'SERVER1HTTP_ENABLED=${ATLASSIAN_HTTP}'
+      - 'SERVER1LETSENCRYPT_CERTIFICATES=${ATLASSIAN_HTTPS}'
+      - 'SERVER1CERTIFICATE_FILE=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/fullchain.pem'
+      - 'SERVER1CERTIFICATE_KEY=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/privkey.pem'
+      - 'SERVER1CERTIFICATE_TRUSTED=/etc/letsencrypt/live/${JIRA_DOMAIN_NAME}/fullchain.pem'
+      - 'SERVER1PROXY_APPLICATION=confluence'
+    restart: unless-stopped
+  jira_postgresql:
+    image: blacklabelops/postgres:${ATLASSIAN_POSTGRES_VERSION}
+    hostname: jira_postgresql
+    volumes:
+      - jira_postgresql_volume:/var/lib/postgresql/data
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - 'POSTGRES_DB=atlassiandb'
+      - 'POSTGRES_USER=${ATLASSIAN_DB_USERNAME}'
+      - 'POSTGRES_PASSWORD=${ATLASSIAN_DB_PASSWORD}'
+      - 'POSTGRES_ENCODING=UNICODE'
+      - 'POSTGRES_COLLATE=C'
+      - 'POSTGRES_COLLATE_TYPE=C'
+    restart: unless-stopped
+  jira:
+    image: blacklabelops/jira:${JIRA_VERSION}
+    hostname: jira
+    volumes:
+      - jira_volume:/var/atlassian/jira
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - "CATALINA_OPTS=${JIRA_JAVA_OPTIONS}"
+      - "JIRA_PROXY_NAME=${JIRA_DOMAIN_NAME}"
+      - "JIRA_PROXY_PORT=${ATLASSIAN_PROXY_PORT}"
+      - "JIRA_PROXY_SCHEME=${ATLASSIAN_PROXY_SCHEME}"
+      - 'JIRA_DATABASE_URL=postgresql://${ATLASSIAN_DB_USERNAME}@jira_postgresql/atlassiandb'
+      - 'JIRA_DB_PASSWORD=${ATLASSIAN_DB_PASSWORD}'
+      - 'JIRA_DELAYED_START=${ATLASSIAN_DB_DELAYED_START}'
+    restart: unless-stopped
+  confluence_postgresql:
+    image: blacklabelops/postgres:${ATLASSIAN_POSTGRES_VERSION}
+    hostname: confluence_postgresql
+    volumes:
+      - confluence_postgresql_volume:/var/lib/postgresql
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - 'POSTGRES_DB=atlassiandb'
+      - 'POSTGRES_USER=${ATLASSIAN_DB_USERNAME}'
+      - 'POSTGRES_PASSWORD=${ATLASSIAN_DB_PASSWORD}'
+    restart: unless-stopped
+  confluence:
+    image: blacklabelops/confluence:${CONFLUENCE_VERSION}
+    hostname: confluence
+    volumes:
+      - confluence_volume:/var/atlassian/confluence
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - "CATALINA_OPTS=${CONFLUENCE_JAVA_OPTIONS}"
+      - "CONFLUENCE_PROXY_NAME=${CONFLUENCE_DOMAIN_NAME}"
+      - "CONFLUENCE_PROXY_PORT=${ATLASSIAN_PROXY_PORT}"
+      - "CONFLUENCE_PROXY_SCHEME=${ATLASSIAN_PROXY_SCHEME}"
+    restart: unless-stopped
+
 volumes:
-#  jira-data:
-  confluence-data:
-  database-data:
+  nginx_volume:
+    external: false
+  ssl_certificates:
+    external: false
+  jira_postgresql_volume:
+    external: false
+  jira_volume:
+    external: false
+  confluence_postgresql_volume:
+    external: false
+  confluence_volume:
+    external: false

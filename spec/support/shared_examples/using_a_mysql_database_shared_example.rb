@@ -1,3 +1,5 @@
+# This is working for up to 6.3.X
+# Needs to be corrected to work for >= 6.4.0
 shared_examples 'using a MySQL database' do
   before :all do
     within 'form[name=standardform]' do

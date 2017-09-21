@@ -47,8 +47,16 @@ shared_examples 'a Confluence instance properly setup' do |database_examples|
       end
 
       it { is_expected.to have_current_path %r{/setup/setupdbchoice-start.action} }
-      it { is_expected.to have_css 'form[name=standardform]' }
-      it { is_expected.to have_css 'form[name=embeddedform]' }
+      # This is for up to 6.3.X
+      # it { is_expected.to have_css 'form[name=standardform]' }
+      # it { is_expected.to have_css 'form[name=embeddedform]' }
+      # it { is_expected.to have_button 'External Database' }
+      # it { is_expected.to have_button 'Embedded Database' }
+      # This is for >= 6.4.0
+      it { is_expected.to have_css 'form[name=setupdbchoice]' }
+      it { is_expected.to have_css 'div.select-database-choice-box[data-database-choice=custom]' }
+      it { is_expected.to have_css 'div.select-database-choice-box[data-database-choice=embedded]' }
+      it { is_expected.to have_button 'Next' }
     end
 
     context 'when processing database setup' do
