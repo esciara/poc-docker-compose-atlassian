@@ -13,7 +13,7 @@ shared_examples 'a running Postgresql Docker container' do |container_name, |
   end
 end
 
-shared_examples 'using a PostgreSQL database' do
+shared_examples 'using a Confluence PostgreSQL database' do
   before :all do
     # This is for up to 6.3.X
     # within 'form[name=standardform]' do
@@ -66,7 +66,7 @@ shared_examples 'using a PostgreSQL database' do
   describe 'setting up JDBC Configuration' do
     before :all do
       within 'form[name=dbform]' do
-        fill_in 'dbConfigInfo.databaseUrl', with: "jdbc:postgresql://#{@container_db.host_or_service}:5432/atlassiandb"
+        fill_in 'dbConfigInfo.databaseUrl', with: "jdbc:postgresql://#{@container_confluence_db.host_or_service}:5432/#{ENV['ATLASSIAN_DB']}"
         fill_in 'dbConfigInfo.userName', with: ENV['ATLASSIAN_DB_USERNAME']
         fill_in 'dbConfigInfo.password', with: ENV['ATLASSIAN_DB_PASSWORD']
         click_button 'Next'
@@ -79,3 +79,25 @@ shared_examples 'using a PostgreSQL database' do
     it { is_expected.to have_button 'Example Site' }
   end
 end
+
+shared_examples 'using a Jira PostgreSQL database' do
+  before :all do
+    within 'form#jira-setup-database' do
+      # select using external database
+      choose 'jira-setup-database-field-database-external'
+      # allow some time for the DOM to change
+      sleep 1
+      # fill in database configuration
+      # select 'PostgreSQL', from: 'jira-setup-database-field-database-type'
+      fill_in 'jira-setup-database-field-database-type-field', with: 'PostgreSQL'
+      fill_in 'jdbcHostname', with: @container_db.host
+      fill_in 'jdbcPort', with: '5432'
+      fill_in 'jdbcDatabase', with: 'jiradb'
+      fill_in 'jdbcUsername', with: 'postgres'
+      fill_in 'jdbcPassword', with: 'mysecretpassword'
+      # continue database setup
+      click_button 'Next'
+    end
+  end
+end
+
