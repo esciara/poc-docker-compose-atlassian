@@ -26,10 +26,20 @@ Docker Compose file to run Atlassian Confluence and Jira Software on one machine
 
 ## What is does extra
 
-- `docker-compose.yml` creates the postgresql databases at initialisation of the container.
-- Confluence (soon Jira) is further configured and ready to be used (with admin user), thanks 
+### Complete setup with database creation
+
+The `docker-compose.yml` instanciate all containers and also creates the postgresql databases at initialisation of the container.
+
+### Further configuration of Confluence (Jira coming soon)
+
+Confluence is further configured and ready to be used (with admin user), thanks 
 to a script based on Ruby + Rspec + Capybara + PhantomJS 
 (for time being, when containers are newly created only)
+
+### Full volumes backup
+
+A separate container can be instantiated to backup the necessary volumes using 
+[Duplicity](http://duplicity.nongnu.org/index.html).
 
 ## Requirements
 
@@ -49,6 +59,10 @@ And to run the scripts that setup the atlassian products:
 - [blacklabelops/jira](https://hub.docker.com/r/blacklabelops/jira/)
 - [blacklabelops/nginx](https://hub.docker.com/r/blacklabelops/nginx/)
 - [blacklabelops/postgres](https://hub.docker.com/r/blacklabelops/postgres/)
+
+And for the volumes backup:
+
+- [blacklabelops/volumerize](https://hub.docker.com/r/blacklabelops/volumerize/)
 
 ## Confluence and Jira containers' configuration
 
@@ -119,6 +133,38 @@ $ bundle exec rake
 #####6. Log into Confluence (Jira coming soon)
 
 Now you can connect to Confluence on http://confluence.example.com with user `admin` and password `admin`.
+
+## Setup the backup of the relevant docker volumes
+
+#####1. Edit the `volumerize.env` environment file:
+
+By default:
+
+- `BACKUP_EXTERNAL_VOLUME` is set to the `backup` directory (created if non existant) 
+in the directory from which the backup container intialisation script is launched
+- `DOCKER_COMPOSE_PROJECT_NAME` is set to `pocdockercomposeatlassian`, which is the default name created by 
+Docker Compose from the directory `poc-docker-compose-atlassian` (created when cloning the git repo).
+- `TIME_ZONE` is se to `Europe/Paris`
+- `VOLUMERIZE_JOBBER_TIME` is set to `0 0 4 * * *` (backing up every day at 4am)
+- `VOLUMERIZE_FULL_IF_OLDER_THAN` is set to `7D` (full back up if last full backup older that 7 days)
+
+#####2. Start the backup container
+
+```
+$ ./run-volumerize-backup.sh
+```
+
+#####3. If you want to backup immediately
+
+```
+$ ./exec-volumerize-backup.sh
+```
+
+#####4. If you want to restore the last backup (CAREFULL THIS ERASES AND REPLACES THE CURRENT VOLUMES)
+
+```
+$ ./run-volumerize-restore.sh
+```
 
 # Acknowledgements
 
