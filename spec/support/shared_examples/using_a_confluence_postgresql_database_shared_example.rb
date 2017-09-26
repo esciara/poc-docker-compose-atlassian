@@ -1,11 +1,11 @@
-shared_examples 'a running Postgresql Docker container' do |container_name, |
+shared_examples 'a running Confluence Postgresql Docker container' do |container_name, |
   before :all do
-    @container_db = Docker::Container.get(container_name)
-    @container_db.start! PublishAllPorts: true
+    @container_confluence_db = Docker::Container.get(container_name)
+    @container_confluence_db.start! PublishAllPorts: true
   end
 
-  describe 'when checking a Postgresql container' do
-    subject { @container_db }
+  describe 'when checking a Confluence Postgresql container' do
+    subject { @container_confluence_db }
 
     it { is_expected.to_not be_nil }
     # it { is_expected.to be_running }
@@ -79,25 +79,3 @@ shared_examples 'using a Confluence PostgreSQL database' do
     it { is_expected.to have_button 'Example Site' }
   end
 end
-
-shared_examples 'using a Jira PostgreSQL database' do
-  before :all do
-    within 'form#jira-setup-database' do
-      # select using external database
-      choose 'jira-setup-database-field-database-external'
-      # allow some time for the DOM to change
-      sleep 1
-      # fill in database configuration
-      # select 'PostgreSQL', from: 'jira-setup-database-field-database-type'
-      fill_in 'jira-setup-database-field-database-type-field', with: 'PostgreSQL'
-      fill_in 'jdbcHostname', with: @container_db.host
-      fill_in 'jdbcPort', with: '5432'
-      fill_in 'jdbcDatabase', with: 'jiradb'
-      fill_in 'jdbcUsername', with: 'postgres'
-      fill_in 'jdbcPassword', with: 'mysecretpassword'
-      # continue database setup
-      click_button 'Next'
-    end
-  end
-end
-

@@ -120,9 +120,9 @@ shared_examples 'a Confluence instance properly setup' do |database_examples|
   end
 
   # describe 'Stopping the Confluence instance' do
-  #   before(:all) { @container.kill_and_wait signal: 'SIGTERM' }
+  #   before(:all) { @container_confluence.kill_and_wait signal: 'SIGTERM' }
   #
-  #   subject { @container }
+  #   subject { @container_confluence }
   #
   #   it 'should shut down successful' do
   #     # give the container up to 5 minutes to successfully shutdown

@@ -2,7 +2,7 @@ shared_examples 'a running Nginx Docker container' do |container_name, |
   before :all do
     @container_proxy = Docker::Container.get(container_name)
     @container_proxy.start! PublishAllPorts: true
-    @container_proxy.setup_capybara_url tcp: 80
+    # @container_proxy.setup_capybara_url tcp: 80
   end
 
   describe 'when checking a Nginx container' do

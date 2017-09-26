@@ -7,10 +7,11 @@ require 'poltergeist/suppressor'
 REGEX_WARN    = /WARNING|WARN/
 REGEX_ERROR   = /ERROR|ERR/
 REGEX_SEVERE  = /SEVERE|FATAL/
-REGEX_STARTUP_ATLASSIAN = /Server startup in (\d+) ms/
+REGEX_STARTUP_CONFLUENCE = /Server startup in (\d+) ms/
+REGEX_STARTUP_JIRA = /Server startup in (\d+ ms)/ #TODO verify this is correct
 REGEX_STARTUP_POSTGRESQL = /database system is ready to accept connections/
 REGEX_STARTUP_NGINX = /start worker processes/
-REGEX_FILTER  = Regexp.compile Regexp.union [
+REGEX_FILTER_CONFLUENCE  = Regexp.compile Regexp.union [
   /Bundle\ org\.springframework\.osgi\.extender\ \[.*\]\ EventDispatcher:\ Error\ during\ dispatch\.\ \(java\.lang\.NullPointerException\)/,
   /The\ executor\ associated\ with\ thread\ pool\ \[http\-bio\-8090\]\ has\ not\ fully\ shutdown\.\ Some\ application\ threads\ may\ still\ be\ running\./,
   # some errors about unregistering JDBC drivers
@@ -18,6 +19,11 @@ REGEX_FILTER  = Regexp.compile Regexp.union [
   # after adding database step
   /The\ web\ application\ \[.*\]\ appears\ to\ have\ started\ a\ thread\ named\ \[.*\]\ but\ has\ failed\ to\ stop\ it\.\ This\ is\ very\ likely\ to\ create\ a\ memory\ leak\./,
   /The\ web\ application\ \[.*\]\ created\ a\ ThreadLocal\ with\ key\ of\ type\ \[.*\]\ \(.*\)\ but\ failed\ to\ remove\ it\ when\ the\ web\ application\ was\ stopped\.\ Threads\ are\ going\ to\ be\ renewed\ over\ time\ to\ try\ and\ avoid\ a\ probable\ memory\ leak\./
+]
+REGEX_FILTER_JIRA  = Regexp.compile Regexp.union [
+  /org\.apache\.catalina\.loader\.WebappClassLoaderBase\.checkThreadLocalMapForLeaks\ The\ web\ application\ \[.+\]\ created\ a\ ThreadLocal\ with\ key\ of\ type\ \[.*\]\ \(value\ \[.*\]\)\ and\ a\ value\ of\ type\ \[.*\]\ \(value\ \[.*\]\)\ but\ failed\ to\ remove\ it\ when\ the\ web\ application\ was\ stopped\.\ Threads\ are\ going\ to\ be\ renewed\ over\ time\ to\ try\ and\ avoid\ a\ probable\ memory\ leak\./,
+  /\[c\.a\.jira\.upgrade\.ConsistencyCheckImpl\]\ Indexing\ is\ turned\ on,\ but\ index\ path\ \[null\]\ invalid\ \-\ disabling\ indexing/,
+  /\[c\.a\.j\.issue\.index\.DefaultIndexManager\]\ File\ path\ not\ set\ \-\ not\ indexing/
 ]
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |file| require file }
