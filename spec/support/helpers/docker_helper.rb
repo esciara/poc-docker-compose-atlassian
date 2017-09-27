@@ -23,9 +23,18 @@ module Docker
       end
     end
 
-    def setup_capybara_url(port, path = '')
+    def setup_capybara_confluence_url(port, path = '')
       docker_url        = URI.parse Docker.url
       docker_url.host   = ENV['CONFLUENCE_DOMAIN_NAME'] || 'localhost' || Docker.info['Name']
+      docker_url.scheme = ENV['ATLASSIAN_PROXY_SCHEME']
+      docker_url.path   = path
+      docker_url.port   = ENV['ATLASSIAN_PROXY_PORT']
+      Capybara.app_host = docker_url.to_s
+    end
+
+    def setup_capybara_jira_url(port, path = '')
+      docker_url        = URI.parse Docker.url
+      docker_url.host   = ENV['JIRA_DOMAIN_NAME'] || 'localhost' || Docker.info['Name']
       docker_url.scheme = ENV['ATLASSIAN_PROXY_SCHEME']
       docker_url.path   = path
       docker_url.port   = ENV['ATLASSIAN_PROXY_PORT']

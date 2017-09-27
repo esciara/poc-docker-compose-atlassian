@@ -2,7 +2,7 @@ shared_examples 'a running Confluence Docker container without reverse proxy' do
   before :all do
     @container_confluence = Docker::Container.get(container_name)
     @container_confluence.start! PublishAllPorts: true
-    @container_confluence.setup_capybara_url tcp: 8090
+    @container_confluence.setup_capybara_confluence_url tcp: 8090
   end
 
   describe 'when checking a Confluence container' do
@@ -20,6 +20,7 @@ shared_examples 'a running Confluence Docker container with reverse proxy' do |c
   before :all do
     @container_confluence = Docker::Container.get(container_name)
     @container_confluence.start! PublishAllPorts: true
+    @container_confluence.setup_capybara_confluence_url tcp: 8090
   end
 
   describe 'when checking a Confluence container' do
@@ -34,8 +35,8 @@ end
 shared_examples 'a running Jira Docker container without reverse proxy' do |container_name, |
   before :all do
     @container_jira = Docker::Container.get(container_name)
-    @container_jira.start! PublishAllPorts: true
-    @container_jira.setup_capybara_url tcp: 8080
+    # @container_jira.start! PublishAllPorts: true
+    @container_jira.setup_capybara_jira_url tcp: 8080
   end
 
   describe 'when checking a Jira container' do
@@ -53,6 +54,7 @@ shared_examples 'a running Jira Docker container with reverse proxy' do |contain
   before :all do
     @container_jira = Docker::Container.get(container_name)
     @container_jira.start! PublishAllPorts: true
+    @container_jira.setup_capybara_jira_url tcp: 8080
   end
 
   describe 'when checking a Jira container' do

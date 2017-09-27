@@ -1,7 +1,44 @@
-shared_examples 'an acceptable JIRA Software instance' do |database_examples|
+shared_examples 'a Jira instance properly setup' do |database_examples|
   describe 'Going through the setup process' do
+    # For <7.5.0 (not sure when it changed)
+    # before :all do
+    #   until current_path =~ %r{/secure/SetupMode!default.jspa}
+    #     visit '/'
+    #     sleep 1
+    #   end
+    # end
+    #
+    # subject { page }
+    #
+    # context 'when visiting the root page' do
+    #   it { is_expected.to have_current_path %r{/secure/SetupMode!default.jspa} }
+    #   it { is_expected.to have_css 'form#jira-setup-mode' }
+    #   it { is_expected.to have_css 'div[data-choice-value=classic]' }
+    # end
+    #
+    # context 'when manually setting up the instance' do
+    #   before :all do
+    #     within 'form#jira-setup-mode' do
+    #       find(:css, 'div[data-choice-value=classic]').trigger('click')
+    #       click_button 'Next'
+    #       wait_for_ajax
+    #     end
+    #   end
+    #
+    #   it { is_expected.to have_current_path %r{/secure/SetupDatabase!default.jspa} }
+    #   it { is_expected.to have_css 'form#jira-setup-database' }
+    #   it { is_expected.to have_selector :radio_button, 'jira-setup-database-field-database-internal' }
+    #   it { is_expected.to have_button 'Next' }
+    # end
+    #
+    # context 'when processing database setup' do
+    #   include_examples database_examples
+    #
+    # End commented <7.5.0 portion
+
+    # For >=7.5.0
     before :all do
-      until current_path =~ %r{/secure/SetupMode!default.jspa}
+      until current_path =~ %r{/secure/SetupApplicationProperties!default.jspa}
         visit '/'
         sleep 1
       end
@@ -9,34 +46,14 @@ shared_examples 'an acceptable JIRA Software instance' do |database_examples|
 
     subject { page }
 
-    context 'when visiting the root page' do
-      it { is_expected.to have_current_path %r{/secure/SetupMode!default.jspa} }
-      it { is_expected.to have_css 'form#jira-setup-mode' }
-      it { is_expected.to have_css 'div[data-choice-value=classic]' }
-    end
-
-    context 'when manually setting up the instance' do
-      before :all do
-        within 'form#jira-setup-mode' do
-          find(:css, 'div[data-choice-value=classic]').trigger('click')
-          click_button 'Next'
-          wait_for_ajax
-        end
-      end
-
-      it { is_expected.to have_current_path %r{/secure/SetupDatabase!default.jspa} }
-      it { is_expected.to have_css 'form#jira-setup-database' }
-      it { is_expected.to have_selector :radio_button, 'jira-setup-database-field-database-internal' }
-      it { is_expected.to have_button 'Next' }
-    end
-
-    context 'when processing database setup' do
-      include_examples database_examples
+    context 'when visiting the root page, landing on application properties setup' do
+    # End >=7.5.0 portion
 
       it { is_expected.to have_current_path %r{/secure/SetupApplicationProperties!default.jspa} }
       it { is_expected.to have_css 'form#jira-setupwizard' }
       it { is_expected.to have_field 'title' }
       it { is_expected.to have_selector :radio_button, 'jira-setupwizard-mode-public' }
+      it { is_expected.to have_field 'baseURL' }
       it { is_expected.to have_button 'Next' }
     end
 
@@ -52,13 +69,17 @@ shared_examples 'an acceptable JIRA Software instance' do |database_examples|
       it { is_expected.to have_current_path %r{/secure/SetupLicense!default.jspa} }
       it { is_expected.to have_css 'form#jira-setupwizard' }
       it { is_expected.to have_css '#importLicenseForm' }
+      it { is_expected.to have_button 'Next' }
     end
 
     context 'when processing license setup' do
       before :all do
         within '#jira-setupwizard' do
           within '#importLicenseForm' do
-            fill_in 'licenseKey', with: '1'
+            # For <7.5.0 (not sure when it changed)
+            # fill_in 'licenseKey', with: '1'
+            # For >=7.5.0
+            fill_in 'licenseKey', with: 'AAABdA0ODAoPeNp9UUtvgkAQvvMrSHppDxAW+9JkkypsUhpFK9j00MuIo24DC5ldbPvvi2LTl3r8Zne+15yl69pOsLJ9Znt+74r1WNcOwtT2PXZjrQhRrcuqQnKHMkOlUSykkaXiIk7FdDKNEmHFdTFHGi9nGklzh1mvksD9N53UlK1BYwgG+Zbe8bqOz6w9cfpRYQwF8mA8GolpEPWHX0/ivZL08b3HvO1eUCoDmREjkDnHogBVY+7qTALB3apopm5WFlaCtEGKQj6YRYnTGQxSJ7l8nDjx5f1167SiclFnxt0CR5dL8waEbkMtN8gN1dh+O17AgZoOpWmMKoMKVHYk0Qk3/9rc6zS5hlGYiNgZMq9zzW67vtUg/ntygjgxQAaJLyHXaI1pBUpq2CV8xrkEKyDcwb9ny1sDT42f7Wf/VwvYBKWKpN4XGKLOSFY72odo2reTvb593t7n4qVniw3k9U6rNXzsAoe6/Sn+c++bs8WfJYkASDAsAhRkXsMnXzDiDiWvT2Wge4K/d6yb2AIUTDzaeKDy8DXOzOBnZSEOhjhezBU=X02i6'
             click_button 'Next'
             wait_for_location_change
           end
@@ -71,6 +92,7 @@ shared_examples 'an acceptable JIRA Software instance' do |database_examples|
       it { is_expected.to have_field 'username' }
       it { is_expected.to have_field 'password' }
       it { is_expected.to have_field 'confirm' }
+      it { is_expected.to have_button 'Next' }
     end
 
     context 'when processing administrative account setup' do
@@ -88,6 +110,7 @@ shared_examples 'an acceptable JIRA Software instance' do |database_examples|
       it { is_expected.to have_current_path %r{/secure/SetupAdminAccount.jspa} }
       it { is_expected.to have_selector :radio_button, 'jira-setupwizard-email-notifications-enabled' }
       it { is_expected.to have_selector :radio_button, 'jira-setupwizard-email-notifications-disabled' }
+      it { is_expected.to have_button 'Finish' }
     end
 
     context 'when processing email notifications setup' do
