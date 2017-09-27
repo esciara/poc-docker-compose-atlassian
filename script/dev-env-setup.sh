@@ -55,10 +55,10 @@ rm -rf ruby-build
 echo 'source /usr/local/share/chruby/chruby.sh' >> /home/vagrant/.bashrc
 echo 'source /usr/local/share/chruby/auto.sh' >> /home/vagrant/.bashrc
 source /home/vagrant/.bashrc  # see https://stackoverflow.com/questions/29628635/why-is-source-home-vagrant-bashrc-not-working-in-a-vagrant-shell-provisionin
-ruby-build 2.2.3 --install-dir /home/vagrant/.rubies/ruby-2.2.3
+ruby-build 2.4.2 --install-dir /home/vagrant/.rubies/ruby-2.4.2
 source /home/vagrant/.bashrc  # see https://stackoverflow.com/questions/29628635/why-is-source-home-vagrant-bashrc-not-working-in-a-vagrant-shell-provisionin
-chruby ruby-2.2.3
-echo 'chruby ruby-2.2.3' >> /home/vagrant/.bashrc
+chruby ruby-2.4.2
+echo 'chruby ruby-2.4.2' >> /home/vagrant/.bashrc
 gem update --system
 gem install bundler
 

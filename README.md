@@ -48,7 +48,7 @@ A separate container can be instantiated to backup the necessary volumes using
 - Docker Compose version 1.14.0+
 
 And to run the scripts that setup the atlassian products:
-- Ruby 2.2.3
+- Ruby 2.4.2
 - PhantomJS 2.1.1
 
 (Checkout the `config/dev-env-setup*.sh` scripts)

@@ -40,10 +40,10 @@ rm -rf ruby-build
 echo 'source /usr/local/share/chruby/chruby.sh' >> $HOME/.bashrc
 echo 'source /usr/local/share/chruby/auto.sh' >> $HOME/.bashrc
 source $HOME/.bashrc
-ruby-build 2.2.3 --install-dir $HOME/.rubies/ruby-2.2.3
+ruby-build 2.4.2 --install-dir $HOME/.rubies/ruby-2.4.2
 source $HOME/.bashrc
-chruby ruby-2.2.3
-echo 'chruby ruby-2.2.3' >> $HOME/.bashrc
+chruby ruby-2.4.2
+echo 'chruby ruby-2.4.2' >> $HOME/.bashrc
 gem update --system
 gem install bundler
 
