@@ -1,6 +1,7 @@
 # poc-docker-compose-atlassian
 
-Docker Compose file to run Atlassian Confluence and Jira Software on one machine, all setup.
+Docker Compose file to run Atlassian Confluence and Jira Software on one machine, all setup
+and configured (work in progress).
 
 ```
       confluence.example.com            jira.example.com            
@@ -11,7 +12,7 @@ Docker Compose file to run Atlassian Confluence and Jira Software on one machine
                                v
                              Nginx
                                +
-                +--------------------------[----+
+                +-------------------------------+
                 |                               |
                 v                               v
        Atlassian Confluence               Atlassian Jira
@@ -24,22 +25,24 @@ Docker Compose file to run Atlassian Confluence and Jira Software on one machine
          [db:atlassiandb]                [db:atlassiandb]
 ```
 
-## What is does extra
+## What it does extra
 
 ### Complete setup with database creation
 
-The `docker-compose.yml` instanciate all containers and also creates the postgresql databases at initialisation of the container.
+The `docker-atlassian.yml` file instantiates all needed containers, 
+but also creates the postgresql databases at initialisation of the container.
 
-### Further configuration of Confluence (Jira coming soon)
+### Further configuration of Confluence and Jira 
 
 Confluence is further configured and ready to be used (with admin user), thanks 
-to a script based on Ruby + Rspec + Capybara + PhantomJS 
+to a script based on Ruby + [Rspec](http://rspec.info) + 
+[Capybara](http://teamcapybara.github.io/capybara/) + [PhantomJS](http://phantomjs.org) 
 (for time being, when containers are newly created only)
 
 ### Full volumes backup
 
-A separate container can be instantiated to backup the necessary volumes using 
-[Duplicity](http://duplicity.nongnu.org/index.html).
+`docker-atlassian-volumerize.yml` creates a stack with a container to backup the atlassian stack 
+and another to restore it using [Duplicity](http://duplicity.nongnu.org/index.html).
 
 ## Requirements
 
@@ -47,8 +50,8 @@ A separate container can be instantiated to backup the necessary volumes using
 - Docker version 17.06.2-ce+
 - Docker Compose version 1.14.0+
 
-And to run the scripts that setup the atlassian products:
-- Ruby 2.4.2
+And to run the scripts that further configure the atlassian products:
+- Ruby 2.4.2 (should also run on 2.3)
 - PhantomJS 2.1.1
 
 (Checkout the `config/dev-env-setup*.sh` scripts)
@@ -66,11 +69,11 @@ And for the volumes backup:
 
 ## Confluence and Jira containers' configuration
 
-The `docker-compose.yml` file in this project has been following the example in 
+The `docker-atlassian.yml` file has been following the example in 
 [https://github.com/blacklabelops/atlassian](https://github.com/blacklabelops/atlassian)
 
 BlackLabelOps' offers full configuration of it's containers through environment variables
-(here set put together in `config/atlassian-default.env`). See the above mentioned repo and 
+(here set put together in `config/atlassian-default.sh`). See the above mentioned repo and 
 other container repos for more information. 
 
 ## Running the docker containers from scratch
@@ -82,18 +85,17 @@ How to use:
 $ git clone https://github.com/esciara/poc-docker-compose-atlassian
 ```
 
-#####2. Edit the `config/atlassian-default.env` environment file to your liking and source it:
+#####2. Edit the `config/atlassian-default.sh` environment file to your liking and source it:
 
 ```
-$ source config/atlassian-default.env
+$ source config/atlassian-default.sh
 ```
- 
-#####3. If you are on a development host machine, set the `DNS` according to the confluence and jira domains 
-declared in `config/atlassian-default.env`:
+
+#####3. If you are on a development host machine, set the `DNS` according to the confluence and jira domains declared in `config/atlassian-default.sh`:
 
 ``` 
 $ vim /etc/hosts
-    # you might want to replace `127.0.0.1` with IP of host that `docker-compose` command run on it.
+    # you might want to replace `127.0.0.1` with IP of the host on which the `docker-compose` command is run.
     127.0.0.1 confluence.example.com www.confluence.example.com
     127.0.0.1 jira.example.com       www.jira.example.com
 ```
@@ -103,19 +105,19 @@ $ vim /etc/hosts
 ```
 # if you want to make sure that you really start from a clean sheet 
 # !!! CAREFULL: this deletes containers AND volumes
-$ docker-compose down -v
+$ docker-compose -f compose-atlassian.yml -p ${ATLASSIAN_COMPOSE_PROJECT_NAME} down -v
 
 # start containers
-$ docker-compose up   # or `docker-compose -p atlassian up` if you want to give it a nicer name
+$ docker-compose -f compose-atlassian.yml -p ${ATLASSIAN_COMPOSE_PROJECT_NAME} up -d
 ```    
 
 Your containers are now running and:
 - Confluence should accessible on [http://confluence.example.com](http://confluence.example.com)
 - Jira should accessible on [http://jira.example.com](http://jira.example.com)
 
-Or whatever URL you setup in `config/atlassian-default.env`.
+(or whatever URLs you set up for `CONFLUENCE_DOMAIN_NAME` and `JIRA_DOMAIN_NAME` in `config/atlassian-default.sh`.)
 
-#####5. Run the scripts to configure Confluence (Jira coming soon)
+#####5. Run the scripts to configure Confluence and Jira
 
 If you want to run the script to setup the atlassian products, first make sure the right libraries are
 made available:
@@ -130,40 +132,36 @@ Then, launch the scripts:
 $ bundle exec rake
 ``` 
 
-#####6. Log into Confluence (Jira coming soon)
+#####6. Log into Confluence or Jira
 
-Now you can connect to Confluence on http://confluence.example.com with user `admin` and password `admin`.
+Now you can log into Confluence or Jira with user `admin` and password `admin` 
+(it is planned in future releases to be able to change this using configuration files).
 
 ## Setup the backup of the relevant docker volumes
 
-#####1. Edit the `volumerize.env` environment file:
+#####1. Edit the `config/atlassian-default.sh` environment file:
 
 By default:
 
-- `BACKUP_EXTERNAL_VOLUME` is set to the `backup` directory (created if non existant) 
-in the directory from which the backup container intialisation script is launched
-- `DOCKER_COMPOSE_PROJECT_NAME` is set to `pocdockercomposeatlassian`, which is the default name created by 
-Docker Compose from the directory `poc-docker-compose-atlassian` (created when cloning the git repo).
-- `TIME_ZONE` is se to `Europe/Paris`
 - `VOLUMERIZE_JOBBER_TIME` is set to `0 0 4 * * *` (backing up every day at 4am)
 - `VOLUMERIZE_FULL_IF_OLDER_THAN` is set to `7D` (full back up if last full backup older that 7 days)
 
-#####2. Start the backup container
+#####2. Deploy the backup stack
 
 ```
-$ ./run-volumerize-backup.sh
+$ docker-compose -f compose-atlassian-volumerize.yml -p ${ATLASSIAN_COMPOSE_PROJECT_NAME}backup up -d
 ```
 
 #####3. If you want to backup immediately
 
 ```
-$ ./exec-volumerize-backup.sh
+$ docker exec ${ATLASSIAN_COMPOSE_PROJECT_NAME}backup_volumerize_backup backup
 ```
 
 #####4. If you want to restore the last backup (CAREFULL THIS ERASES AND REPLACES THE CURRENT VOLUMES)
 
 ```
-$ ./run-volumerize-restore.sh
+$ docker exec ${ATLASSIAN_COMPOSE_PROJECT_NAME}backup_volumerize_restore
 ```
 
 # Acknowledgements

@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+  volumerize_backup:
+    image: blacklabelops/volumerize
+    volumes:
+      - 'confluence_postgresql_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_postgresql_volume:ro'
+      - 'jira_postgresql_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_postgresql_volume:ro'
+      - 'confluence_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_volume:ro'
+      - 'jira_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_volume:ro'
+      - 'nginx_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_nginx_volume:ro'
+      - 'ssl_certificates:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_ssl_certificates:ro'
+      - backup_volume:/backup
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - VOLUMERIZE_SOURCE=/source
+      - VOLUMERIZE_TARGET=file:///backup
+      - 'VOLUMERIZE_JOBBER_TIME=${VOLUMERIZE_JOBBER_TIME}'
+      - 'VOLUMERIZE_FULL_IF_OLDER_THAN=${VOLUMERIZE_FULL_IF_OLDER_THAN}'
+      - 'VOLUMERIZE_CONTAINERS=${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_postgresql_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_postgresql_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_nginx_1'
+    restart: unless-stopped
+
+  volumerize_restore:
+    image: blacklabelops/volumerize
+    volumes:
+      - 'confluence_postgresql_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_postgresql_volume'
+      - 'jira_postgresql_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_postgresql_volume'
+      - 'confluence_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_volume'
+      - 'jira_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_volume'
+      - 'nginx_volume:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_nginx_volume'
+      - 'ssl_certificates:/source/${ATLASSIAN_COMPOSE_PROJECT_NAME}_ssl_certificates'
+      - backup_volume:/backup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - 'TZ=${ATLASSIAN_TIME_ZONE}'
+      - VOLUMERIZE_SOURCE=/source
+      - VOLUMERIZE_TARGET=file:///backup
+      - 'VOLUMERIZE_CONTAINERS=${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_postgresql_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_postgresql_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_1 ${ATLASSIAN_COMPOSE_PROJECT_NAME}_nginx_1'
+    restart: unless-stopped
+
+volumes:
+  backup_volume:
+    external: false
+  nginx_volume:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_nginx_volume'
+  ssl_certificates:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_ssl_certificates'
+  jira_postgresql_volume:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_postgresql_volume'
+  jira_volume:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_jira_volume'
+  confluence_postgresql_volume:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_postgresql_volume'
+  confluence_volume:
+    external:
+      name: '${ATLASSIAN_COMPOSE_PROJECT_NAME}_confluence_volume'
